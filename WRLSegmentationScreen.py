@@ -21,21 +21,21 @@ parser.add_argument('--pais', type=str, required=True)
 parser.add_argument('--tipo', type=str, required=True)
 
 #Parse the argument
-args = parser.parse_args()
+# args = parser.parse_args()
 
-codigo = args.cod
-usina = args.usi
-vida = args.vida
-site = args.site
-pais = args.pais
-tipo = args.tipo
+# codigo = args.cod
+# usina = args.usi
+# vida = args.vida
+# site = args.site
+# pais = args.pais
+# tipo = args.tipo
 
-# codigo = 'args.cod'
-# usina = 'args.usi'
-# vida = 'args.vida'
-# site = 'args.site'
-# pais = 'args.pais'
-# tipo = 'args.tipo'
+codigo = 'args.cod'
+usina = 'args.usi'
+vida = 'args.vida'
+site = 'args.site'
+pais = 'args.pais'
+tipo = 'args.tipo'
 
 # Modes: "System" (standard), "Dark", "Light"
 customtkinter.set_appearance_mode("Dark")
@@ -298,7 +298,7 @@ class ToplevelWindow(customtkinter.CTkToplevel):
         super().__init__(*args, **kwargs)
         width = app.winfo_width()//2
         height = app.winfo_height()//2
-        self.geometry(f"400x170+{width-50}+{height-100}")
+        self.geometry(f"400x160+{width-50}+{height-100}")
         self.resizable(False,False)
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure((0,1), weight=0)
@@ -307,10 +307,11 @@ class ToplevelWindow(customtkinter.CTkToplevel):
         self.overrideredirect(1)
 
         self.msg_frame = customtkinter.CTkFrame(self)
-        self.msg_frame.pack(fill=ttk.BOTH, expand=True)
         self.msg_frame.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
+        self.msg_frame.grid_columnconfigure(0, weight=1)
+        self.msg_frame.grid_rowconfigure((0,1), weight=0)
 
-        self.msg_label = customtkinter.CTkLabel(self.msg_frame, text="Dados salvos com sucesso!", font=customtkinter.CTkFont(size=20, weight="bold"),width=300)
+        self.msg_label = customtkinter.CTkLabel(self.msg_frame, text="Dados salvos com sucesso!", font=customtkinter.CTkFont(size=20, weight="bold"),width=260)
         self.msg_label.grid(row=0, column=0,padx=20, pady=20, sticky="nsew")
 
         self.button_1 = customtkinter.CTkButton(self.msg_frame, text="OK", command=self.exit)
