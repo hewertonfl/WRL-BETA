@@ -22,7 +22,6 @@ parser.add_argument('--tipo', type=str, required=True)
 
 # Parse the argument
 args = parser.parse_args()
-# Print "Hello" + the user input argument
 
 codigo = args.cod
 usina = args.usi
@@ -30,6 +29,13 @@ vida = args.vida
 site = args.site
 pais = args.pais
 tipo = args.tipo
+
+# codigo = 'args.cod'
+# usina = 'args.usi'
+# vida = 'args.vida'
+# site = 'args.site'
+# pais = 'args.pais'
+# tipo = 'args.tipo'
 
 # Modes: "System" (standard), "Dark", "Light"
 customtkinter.set_appearance_mode("Dark")
@@ -41,13 +47,17 @@ class App(customtkinter.CTk):
     def __init__(self):
         super().__init__()
 
+        # Janela de mensagem
+        self.toplevel_window = None
+
         # configure window
         self.title("WRL Segmentação de Bico")
         self.geometry(f"{1280}x{768}")
+        self.attributes('-fullscreen', True)
 
         self.label_size = 250
 
-        # configure grid layout (4x4)
+        # configure grid
         self.grid_columnconfigure(1, weight=1)
         self.grid_columnconfigure(0, weight=0)
         self.grid_rowconfigure((0, 1, 2), weight=1)
@@ -88,12 +98,9 @@ class App(customtkinter.CTk):
         # Frame de informações da inspeção
         self.info_frame = customtkinter.CTkFrame(self.sidebar_frame)
         self.info_frame.grid(row=2, column=0, padx=20, pady=15, sticky="ew")
-        self.info_label = customtkinter.CTkLabel(self.info_frame, text="Informações Gerais", font=customtkinter.CTkFont(
-            size=20, weight="bold"), width=self.label_size)
-        self.info_label.grid(row=0, column=0, padx=10,
-                             pady=(20, 10), sticky="ew")
-        self.info_desc = customtkinter.CTkLabel(
-            self.info_frame, text=f"Grupo:{self.grupo}\nCódigo: {self.codigo}\nVida: {self.vida}\nSite: {self.site}", font=customtkinter.CTkFont(size=15, weight="normal"), justify="left")
+        self.info_label = customtkinter.CTkLabel(self.info_frame, text="Informações Gerais", font=customtkinter.CTkFont(size=20, weight="bold"), width=self.label_size)
+        self.info_label.grid(row=0, column=0, padx=10,pady=(20, 10), sticky="ew")
+        self.info_desc = customtkinter.CTkLabel(self.info_frame, text=f"Grupo:{self.grupo}\nCódigo: {self.codigo}\nVida: {self.vida}\nSite: {self.site}", font=customtkinter.CTkFont(size=15, weight="normal"), justify="left")
         self.info_desc.grid(row=1, column=0, padx=(0, 0), pady=(0, 20))
 
         # Frame de Acompanhamento das medições
@@ -101,13 +108,12 @@ class App(customtkinter.CTk):
             size=20, weight="bold"), width=self.label_size)
         self.med_label.grid(row=2, column=0, padx=10,
                             pady=(0, 10), sticky="ew")
-        self.med_desc = customtkinter.CTkLabel(self.info_frame, text="Externo: 400.00 mm\nD1: 60.00 mm\nD2: 60.00 mm\nD3: 60.00 mm\nD4: 60.00 mm\nD5: 60.00 mm\nD6: 60.00 mm",
-                                               font=customtkinter.CTkFont(size=15, weight="normal"), justify="left")
+        self.med_desc = customtkinter.CTkLabel(self.info_frame, text="Externo: 400.00 mm\nD1: 60.00 mm\nD2: 60.00 mm\nD3: 60.00 mm\nD4: 60.00 mm\nD5: 60.00 mm\nD6: 60.00 mm",font=customtkinter.CTkFont(size=15, weight="normal"), justify="left")
         self.med_desc.grid(row=3, column=0, padx=(0, 0), pady=(0, 20))
 
         # Botões
         self.sidebar_button_2 = customtkinter.CTkButton(
-            self.sidebar_frame, command=self.sidebar_button_event, text="Salvar Diâmetros")
+            self.sidebar_frame, command=self.save_diameters, text="Salvar Diâmetros")
         self.sidebar_button_2.grid(
             row=4, column=0, padx=20, pady=10, sticky="ew")
         self.sidebar_button_3 = customtkinter.CTkButton(
@@ -182,8 +188,6 @@ class App(customtkinter.CTk):
 
     def streaming(self):
         if self.onCamera:
-            # while not self.cap.read()[0]:
-            #     self.cap = cv2.VideoCapture(0)
             self.cv2image = cv2.cvtColor(self.cap.read()[1], cv2.COLOR_BGR2RGB)
             self.imgRef = np.copy(self.cv2image)
             #self.cap.set(cv2.CAP_PROP_BUFFERSIZE,1)
@@ -247,7 +251,14 @@ class App(customtkinter.CTk):
 
     def exit(self):
         app.destroy()
-        process = subprocess.Popen(['python3', 'main.py'], stdout=None, stderr=None)
+        #process = subprocess.Popen(['python3', 'main.py'], stdout=None, stderr=None)
+    
+    def save_diameters(self):
+        if self.toplevel_window is None or not self.toplevel_window.winfo_exists():
+            self.toplevel_window = ToplevelWindow(self)
+        else:
+            self.toplevel_window.focus()
+        self.toplevel_window.grab_set()
 
     def checkTabs(self):
         if (self.tabview.get() == "Câmera" and self.onCamera == False and self.showAnimation == False):
@@ -282,9 +293,34 @@ class App(customtkinter.CTk):
         self.after(15, self.responsive)
 
 
+class ToplevelWindow(customtkinter.CTkToplevel):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        width = app.winfo_width()//2
+        height = app.winfo_height()//2
+        self.geometry(f"400x170+{width-50}+{height-100}")
+        self.resizable(False,False)
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure((0,1), weight=0)
+        self.title("")
+        self.wm_attributes("-topmost", True) 
+
+        self.msg_frame = customtkinter.CTkFrame(self)
+        self.msg_frame.pack(fill=ttk.BOTH, expand=True)
+        self.msg_frame.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
+
+        self.msg_label = customtkinter.CTkLabel(self.msg_frame, text="Dados salvos com sucesso!", font=customtkinter.CTkFont(size=20, weight="bold"),width=300)
+        self.msg_label.grid(row=0, column=0,padx=20, pady=20, sticky="nsew")
+
+        self.button_1 = customtkinter.CTkButton(self.msg_frame, text="OK", command=self.exit)
+        self.button_1.grid(row=1, column=0,padx=20, pady=(0,20), sticky="nsew")
+
+
+    def exit(self):
+        self.destroy()
+
 if __name__ == "__main__":
     app = App()
-    app.attributes('-fullscreen', True)
     app.checkTabs()
     app.responsive()
     app.streaming()

@@ -4,13 +4,8 @@ import os
 import re
 import pandas as pd
 
-
-
-# banco = sqlite3.connect('/home/hewerton/Documentos/WRL_BETA/database.db')
-# cursor = banco.cursor()
-
 def conectar_banco_dados():
-    # Conecta-se ao banco de dados (cria-o se não existir)
+    '''Conecta-se ao banco de dados (cria-o se não existir)'''
     conn = sqlite3.connect('/home/hewerton/Documentos/WRL_BETA/database.db')
     return conn
 
@@ -24,8 +19,7 @@ def criar_tabela_usinas():
 def criar_tabela_dados():
     banco = conectar_banco_dados()
     cursor = banco.cursor()
-    cursor.execute (f"CREATE TABLE IF NOT EXISTS Dados (REGIAO TEXT,País TEXT,Grupo TEXT,Site TEXT,BOF TEXT,Capacity TEXT,Lanças TEXT,Carros TEXT\
-    ,Bico_id TEXT,Tipo TEXT, Vida TEXT,Posição TEXT, Carro TEXT, Convertedor TEXT, Operador TEXT, Data Text,Angulo Text,D1 TEXT,D2 TEXT,D3 TEXT,D4 TEXT,D5 TEXT,D6 TEXT,D_Externo TEXT)")
+    cursor.execute ("CREATE TABLE IF NOT EXISTS Dados (REGIAO TEXT,País TEXT,Grupo TEXT,Site TEXT,BOF TEXT,Capacity TEXT,Lanças TEXT,Carros TEXT,Bico_id TEXT,Tipo TEXT, Vida TEXT,Posição TEXT, Carro TEXT, Convertedor TEXT, Operador TEXT, Data Text,Angulo Text,D1 TEXT,D2 TEXT,D3 TEXT,D4 TEXT,D5 TEXT,D6 TEXT,D_Externo TEXT)")
     banco.commit()
     cursor.close()
 
@@ -39,16 +33,14 @@ def insert_usina(id,regiao,pais,grupo,site,bof,capacity,lancas,carros):
 def insert_dados(regiao,pais,grupo,site,bof,capacity,lancas,carros,bico_id,tipo,posicao,carro,convertedor):
     banco = conectar_banco_dados()
     cursor = banco.cursor()
-    cursor.execute (f"INSERT INTO Dados (REGIAO,País,Grupo,Site,BOF,Lanças,Capacity,Carros,Bico_id,Tipo,Posição,Carro,Convertedor) VALUES ('{regiao}','{pais}','{grupo}',\
-    '{site}','{bof}','{lancas}','{capacity}','{carros}','{bico_id}','{tipo}','{posicao}','{carro}','{convertedor}')")
+    cursor.execute (f"INSERT INTO Dados (REGIAO,País,Grupo,Site,BOF,Lanças,Capacity,Carros,Bico_id,Tipo,Posição,Carro,Convertedor) VALUES ('{regiao}','{pais}','{grupo}','{site}','{bof}','{lancas}','{capacity}','{carros}','{bico_id}','{tipo}','{posicao}','{carro}','{convertedor}')")
     banco.commit()
     cursor.close()
 
 def insert_dados_inspec(regiao,pais,grupo,site,bof,capacity,lancas,carros,bico_id,tipo,posicao,carro,vida,operador,data,Convertedor):
     banco = conectar_banco_dados()
     cursor = banco.cursor()
-    cursor.execute (f"INSERT INTO Dados (REGIAO,País,Grupo,Site,BOF,Lanças,Capacity,Carros,Bico_id,Tipo,Posição,Carro,Vida,Operador,Data,Convertedor) VALUES ('{regiao}','{pais}','{grupo}',\
-    '{site}','{bof}','{lancas}','{capacity}','{carros}','{bico_id}','{tipo}','{posicao}','{carro}','{vida}','{operador}','{data}','{Convertedor}')")
+    cursor.execute (f"INSERT INTO Dados (REGIAO,País,Grupo,Site,BOF,Lanças,Capacity,Carros,Bico_id,Tipo,Posição,Carro,Vida,Operador,Data,Convertedor) VALUES ('{regiao}','{pais}','{grupo}','{site}','{bof}','{lancas}','{capacity}','{carros}','{bico_id}','{tipo}','{posicao}','{carro}','{vida}','{operador}','{data}','{Convertedor}')")
     banco.commit()
     cursor.close()
 
@@ -66,12 +58,11 @@ def delete_dados(nome_tabela,col1,cond1,col2,cond2,*args,mode=False):
     if mode == False:
         comando = f"DELETE FROM {nome_tabela} WHERE {col1}='{cond1}' AND {col2}='{cond2}'"
     elif mode == True:
-         comando = f"DELETE FROM {nome_tabela} WHERE {col1}='{cond1}' AND {col2}='{cond2}' AND Vida IS NULL"
+        comando = f"DELETE FROM {nome_tabela} WHERE {col1}='{cond1}' AND {col2}='{cond2}' AND Vida IS NULL"
          
     for i in range(0,len(args),2):
         comando = comando+f" AND {args[i]}='{args[i+1]}'"
 
-    print(comando) 
     cursor.execute(comando)
     banco.commit()
     cursor.close()
@@ -182,10 +173,6 @@ def ler_colunas2(nome_coluna,nome_tabela,cond1,x,cond2,y,cond3,z):
     colunas = cursor.execute(f'SELECT {nome_coluna} FROM {nome_tabela} WHERE {cond1} = "{x}" AND {cond2} = "{y}" AND {cond3} = "{z}"').fetchall()
     cursor.close()
     return colunas
-
-#def verifica_existencia(tabela_nome,coluna_nome1, dado1,coluna_nome2, dado2,coluna_nome3, dado3,coluna_nome4, dado4,coluna_nome5, dado5):
-#    return cursor.execute(f"SELECT EXISTS(SELECT * FROM {tabela_nome} WHERE {coluna_nome1} = '{dado1}' AND {coluna_nome2} = '{dado2}'\
-#        AND {coluna_nome3} = '{dado3}' AND {coluna_nome4} = '{dado4}' AND {coluna_nome5} = '{dado5}')").fetchone()[0]
         
 def verifica_existencia(tabela_nome,coluna_nome,dado,**kwargs):
     banco = conectar_banco_dados()
@@ -258,5 +245,4 @@ def check_caixa_vazia(a):
         return False
 
 if __name__ == "__main__":
-    #print('aaaaa',str(os.path.dirname(os.path.abspath(__file__))))
     print(acessa_dado_4_cond('Tipo','dados','Grupo','Usiminas','Site','Ipatinga1','bico_id','1','bico_id','1')[0][0])

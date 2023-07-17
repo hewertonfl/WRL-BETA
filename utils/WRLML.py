@@ -50,6 +50,4 @@ def segment(image):
 
 if __name__ =='__main__':
     root = os.path.dirname('WRLSegmentationScreen.py')
-    # path = '../weights/best.onnx'
-    # print(os.path.join(root,path))
     print(root)
