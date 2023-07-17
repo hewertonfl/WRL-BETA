@@ -20,7 +20,7 @@ parser.add_argument('--site', type=str, required=True)
 parser.add_argument('--pais', type=str, required=True)
 parser.add_argument('--tipo', type=str, required=True)
 
-# Parse the argument
+#Parse the argument
 args = parser.parse_args()
 
 codigo = args.cod
@@ -251,7 +251,7 @@ class App(customtkinter.CTk):
 
     def exit(self):
         app.destroy()
-        #process = subprocess.Popen(['python3', 'main.py'], stdout=None, stderr=None)
+        process = subprocess.Popen(['python3', 'main.py'], stdout=None, stderr=None)
     
     def save_diameters(self):
         if self.toplevel_window is None or not self.toplevel_window.winfo_exists():
@@ -303,7 +303,8 @@ class ToplevelWindow(customtkinter.CTkToplevel):
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure((0,1), weight=0)
         self.title("")
-        self.wm_attributes("-topmost", True) 
+        self.wm_attributes("-topmost", True)
+        self.overrideredirect(1)
 
         self.msg_frame = customtkinter.CTkFrame(self)
         self.msg_frame.pack(fill=ttk.BOTH, expand=True)
