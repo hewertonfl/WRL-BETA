@@ -1,5 +1,4 @@
 import tkinter as ttk
-import tkinter.messagebox
 import customtkinter
 from PIL import Image, ImageTk
 from utils.WRLML import *
@@ -10,15 +9,20 @@ import argparse
 import subprocess
 
 
-#Create the parser
-parser = argparse.ArgumentParser()
-# Add an argument
-parser.add_argument('--cod', type=str, required=True)
-parser.add_argument('--usi', type=str, required=True)
-parser.add_argument('--vida', type=str, required=True)
-parser.add_argument('--site', type=str, required=True)
-parser.add_argument('--pais', type=str, required=True)
-parser.add_argument('--tipo', type=str, required=True)
+# import RPi.GPIO as gpio
+# gpio.setmode(gpio.BCM)
+# gpio.setup(23, gpio.IN, pull_up_down = gpio.PUD_DOWN)
+
+
+# #Create the parser
+# parser = argparse.ArgumentParser()
+# # Add an argument
+# parser.add_argument('--cod', type=str, required=True)
+# parser.add_argument('--usi', type=str, required=True)
+# parser.add_argument('--vida', type=str, required=True)
+# parser.add_argument('--site', type=str, required=True)
+# parser.add_argument('--pais', type=str, required=True)
+# parser.add_argument('--tipo', type=str, required=True)
 
 #Parse the argument
 # args = parser.parse_args()
@@ -189,9 +193,8 @@ class App(customtkinter.CTk):
     def streaming(self):
         if self.onCamera:
             self.cv2image = cv2.cvtColor(self.cap.read()[1], cv2.COLOR_BGR2RGB)
+            self.cap.set(cv2.CAP_PROP_AUTOFOCUS, 0)
             self.imgRef = np.copy(self.cv2image)
-            #self.cap.set(cv2.CAP_PROP_BUFFERSIZE,1)
-            #self.cap.set(cv2.CAP_PROP_FPS,60)
 
             # Inversão da imagem e adição das marcações de alvo
             shapeInvert = (self.cv2image.shape[1], self.cv2image.shape[0])
