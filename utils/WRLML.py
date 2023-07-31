@@ -30,11 +30,11 @@ def order(image,centers,reference):
         if(deltaY>0 and deltaX>0):
             angle = angle+0
         elif(deltaY>0 and deltaX<0):
-            angle = pi+angle
+            angle = (pi/2)+angle
         elif(deltaY<0 and deltaX<0):
             angle = pi+angle
         elif(deltaY<0 and deltaX>0):
-            angle = angle+2*pi
+            angle = angle+(3*pi/2)
 
         angles = np.append(angles,angle)
     orderAux = np.argsort(angles)
@@ -95,7 +95,7 @@ def segment():
     maskAux.pop(d_max_index)
     centers = np.delete(centers,d_max_index,axis=0)
 
-    angle = 0.57
+    angle = 3.57
     holes_order = order(image,centers,angle)
     holes_order_list = holes_order.tolist()
 
