@@ -14,41 +14,52 @@ def calc_center(mask):
     center = cX,cY
     return center
 
-def order(image,centers,reference):
+def order(image,centers,compass):
     y,x,_ = image.shape
-    y//=2
-    x//=2
+    y/=2
+    x/=2
     angles = np.array([])
+    order = np.array([])
     pi = np.pi
 
-    # Calcule dos ângulos
+    # Calculo dos ângulos
     for center in centers:
         deltaX=center[0]-x
         deltaY=center[1]-y
         angle= np.arctan(deltaY/deltaX)
 
-        if(deltaY>0 and deltaX>0):
-            angle = angle+0
-        elif(deltaY>0 and deltaX<0):
-            angle = (pi/2)+angle
+        # Quadrante 1
+        if(deltaY<0 and deltaX>0):
+            angle = angle*(-1)
+            print('Q1:',angle*180/pi)
+
+        # Quadrante 2
         elif(deltaY<0 and deltaX<0):
-            angle = pi+angle
-        elif(deltaY<0 and deltaX>0):
-            angle = angle+(3*pi/2)
+            angle = pi-angle
+            print('Q2:',angle*180/pi)
+        
+        # Quadrante 3
+        elif(deltaY>0 and deltaX<0):
+            angle = angle+pi
+            print('Q3:',angle*180/pi)
+        
+        # Quadrante 4
+        elif(deltaY>0 and deltaX>0):
+            angle = angle*(-1)+2*pi
+            print('Q4:',angle*180/pi)
+        
 
         angles = np.append(angles,angle)
     orderAux = np.argsort(angles)
-    print(orderAux)
-    anglesAux = np.abs(angles-reference)
-    first_index = int(np.argmin(anglesAux))
-    print(first_index)
-    slice1 = orderAux[first_index:]
-    slice2 = orderAux[0:first_index]
-    order = np.concatenate((slice1,slice2))
-    print('Referencia  - Angulos:',anglesAux)
 
-    #order = np.argsort(angles)
-    print(order)
+    angleRef = np.abs(angles[orderAux]-compass)
+    angleIndex = int(np.argmin(angleRef))
+
+    slice_1 = orderAux[angleIndex:]
+    slice_2 = orderAux[0:angleIndex]
+
+    order = np.concatenate((slice_1,slice_2))
+ 
     return order
 
 def calc_diameter(mask):
@@ -86,7 +97,8 @@ def segment():
             maskAux.append(mask)
 
     # Encontrando o indice do diametro máximo 
-    print(centers)
+
+
     d_max_index = np.argmax(diameters)
     d_max = np.array(diameters[d_max_index])
     d_max_mask = maskAux[d_max_index]
@@ -95,7 +107,7 @@ def segment():
     maskAux.pop(d_max_index)
     centers = np.delete(centers,d_max_index,axis=0)
 
-    angle = 3.57
+    angle = 1.047
     holes_order = order(image,centers,angle)
     holes_order_list = holes_order.tolist()
 
@@ -109,7 +121,6 @@ def segment():
         text_center = None
         if i < (len(maskAux)-1):
             text_center = int(center[0])-10,int(center[1])+10
-        print(text_center)
         text = str(i)#+': '+str(diameters[i])
         annotated_frame = cv2.drawContours(image,mask,-1,(0,255,255),4)
         annotated_frame = cv2.putText(image,text,text_center ,cv2.FONT_HERSHEY_SIMPLEX,1,(0, 255, 0),2,cv2.LINE_AA )
