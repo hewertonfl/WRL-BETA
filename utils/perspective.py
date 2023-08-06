@@ -4,6 +4,7 @@ import os
 offsetX = 450#590
 offsetY = 0#170
 im_dst_shape = (1080, 1920)
+
 root = os.path.dirname(os.path.abspath(__file__))
 imagePath = os.path.join(root,'../test.png')
 
@@ -47,6 +48,7 @@ def six_points_transform(image, pts):
     # Read destination image. (Imagem de modelo para a transformação)
     im_dst = cv2.imread(imageBasePath+'hex.jpg')
     im_dst = im_dst[170:910, 590:1330]
+    im_dst = im_dst[120:960, 590:1330]
     # Destination images's points.
     #pts_dst = np.array([[1260-offsetX,551-offsetY],[1115-offsetX,803-offsetY],[821-offsetX,803-offsetY],[674-offsetX,551-offsetY],[821-offsetX,299-offsetY],[1115-offsetX,299-offsetY]])
     pts_dst = np.array([[820,296],[1116,296],[670,550],[1262,550],[820,804],[1116,804]])
@@ -57,7 +59,6 @@ def six_points_transform(image, pts):
 
     # Warp source image to destination based on homography
     im_out = cv2.warpPerspective(im_src, h, (im_dst_shape[1],im_dst_shape[0]))
-    im_out = cv2.resize(im_out, (1280,800), interpolation = cv2.INTER_AREA)
     return im_out
     
 def five_points_transform(image, pts):
