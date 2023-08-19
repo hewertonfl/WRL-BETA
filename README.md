@@ -1,8 +1,8 @@
 # WRL - Wear Register Lance
 
-    WRL é um software desenvolvido para medição do desgaste do bico da lança de convertedores LD. Os convertedores LD são equipamentos utilizados na produção de aço a partir do ferro-gusa. O bico da lança é responsável por injetar oxigênio no interior do convertedor, o que provoca uma reação química que reduz o teor de carbono do metal. O bico da lança sofre um desgaste ao longo do tempo, o que afeta a sua eficiência e a qualidade do aço produzido.
+WRL é um software desenvolvido para medição do desgaste do bico da lança de convertedores LD. Os convertedores LD são equipamentos utilizados na produção de aço a partir do ferro-gusa. O bico da lança é responsável por injetar oxigênio no interior do convertedor, o que provoca uma reação química que reduz o teor de carbono do metal. O bico da lança sofre um desgaste ao longo do tempo, o que afeta a sua eficiência e a qualidade do aço produzido.
 
-    O software WRL utiliza técnicas de visão computacional e aprendizado de máquina para estimar o desgaste do bico da lança a partir de imagens capturadas por uma câmera instalada no convertedor. O software também registra os dados de desgaste em um banco de dados e gera relatórios periódicos sobre o estado do bico da lança. O software WRL permite uma maior precisão, rapidez e segurança na medição do desgaste do bico da lança, contribuindo para a otimização do processo de produção de aço.
+O software WRL utiliza técnicas de visão computacional e aprendizado de máquina para estimar o desgaste do bico da lança a partir de imagens capturadas por uma câmera instalada no convertedor. O software também registra os dados de desgaste em um banco de dados e gera relatórios periódicos sobre o estado do bico da lança. O software WRL permite uma maior precisão, rapidez e segurança na medição do desgaste do bico da lança, contribuindo para a otimização do processo de produção de aço.
 
 ## Funcionalidades
 
