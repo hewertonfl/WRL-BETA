@@ -1,13 +1,12 @@
 import tkinter as ttk
 import customtkinter
 from PIL import Image, ImageTk
-from utils.WRLML import *
+#from utils.WRLML import *
 import cv2
 import os
 import numpy as np
 import argparse
 import subprocess
-
 
 # import RPi.GPIO as gpio
 # gpio.setmode(gpio.BCM)
@@ -34,12 +33,12 @@ import subprocess
 # pais = args.pais
 # tipo = args.tipo
 
-codigo = 'args.cod'
-usina = 'args.usi'
-vida = 'args.vida'
-site = 'args.site'
-pais = 'args.pais'
-tipo = 'args.tipo'
+codigo = '1B02X'
+usina = 'Usiminas'
+vida = '500'
+site = 'Usiminas'
+pais = 'BRASIL'
+tipo = 'SLAGLESS 6 FUROS'
 
 # Modes: "System" (standard), "Dark", "Light"
 customtkinter.set_appearance_mode("Dark")
@@ -90,9 +89,9 @@ class App(customtkinter.CTk):
         self.site = site
 
         # root
-        self.root = '/home/hewerton/Documentos/WRL_BETA/'
+        self.root = os.path.dirname(os.path.abspath(__file__))
         # Configure gif
-        self.path = self.root+"db_images/load.gif"
+        self.path  = os.path.join(self.root,"db_images/load.gif")
         self.gifImg = Image.open(self.path)
         self.frames = self.gifImg.n_frames
         self.gifImgFrames = [ttk.PhotoImage(
@@ -131,14 +130,7 @@ class App(customtkinter.CTk):
                                                                        command=self.change_appearance_mode_event)
         self.appearance_mode_optionemenu.grid(
             row=7, column=0, padx=20, pady=(10, 10), sticky="ew")
-        self.scaling_label = customtkinter.CTkLabel(
-            self.sidebar_frame, text="UI Scaling:", anchor="w")
-        self.scaling_label.grid(row=8, column=0, padx=20,
-                                pady=(10, 0), sticky="ew")
-        self.scaling_optionemenu = customtkinter.CTkOptionMenu(self.sidebar_frame, values=["80%", "90%", "100%", "110%", "120%"],
-                                                               command=self.change_scaling_event)
-        self.scaling_optionemenu.grid(
-            row=9, column=0, padx=20, pady=(10, 20), sticky="ew")
+    
 
         # Criação das guias de visualização
         self.tabview = customtkinter.CTkTabview(self, corner_radius=20)
@@ -194,6 +186,7 @@ class App(customtkinter.CTk):
         if self.onCamera:
             self.cv2image = cv2.cvtColor(self.cap.read()[1], cv2.COLOR_BGR2RGB)
             self.cap.set(cv2.CAP_PROP_AUTOFOCUS, 0)
+            self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 2)
             self.imgRef = np.copy(self.cv2image)
 
             # Inversão da imagem e adição das marcações de alvo
@@ -210,6 +203,15 @@ class App(customtkinter.CTk):
                     (centroImag[0], y1), cor, 3)
             cv2.line(self.cv2image, (x0, centroImag[1]),
                     (x1, centroImag[1]), cor, 3)
+            
+            angulo = np.pi/6
+            offset = -10
+            x_norte = int(raio* np.cos(angulo))+offset
+            y_norte = int(raio* np.sin(angulo))+offset
+            text_position = (x_norte+centroImag[0], centroImag[1]-y_norte)
+            cv2.putText(self.cv2image, 'N', text_position, cv2.FONT_HERSHEY_DUPLEX, 1, [255, 255, 255], 2, cv2.LINE_AA)
+            cv2.flip(self.cv2image,0)
+
 
             # Redimensionamento para visualização
             self.img = self.resizeImg(self.cv2image)
@@ -254,7 +256,7 @@ class App(customtkinter.CTk):
 
     def exit(self):
         app.destroy()
-        process = subprocess.Popen(['python3', 'main.py'], stdout=None, stderr=None)
+        #process = subprocess.Popen(['python3', 'main.py'], stdout=None, stderr=None)
     
     def save_diameters(self):
         if self.toplevel_window is None or not self.toplevel_window.winfo_exists():
@@ -268,6 +270,7 @@ class App(customtkinter.CTk):
             self.cap = cv2.VideoCapture(0)
             self.onCamera = True
             self.showAnimation = False
+
 
         elif (self.tabview.get() != "Câmera"):
             self.cap.release()

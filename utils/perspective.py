@@ -3,12 +3,10 @@ import cv2
 import os
 offsetX = 450#590
 offsetY = 0#170
-im_dst_shape = (1080, 1920)
+im_dst_shape = (1080, 1080)
 
 root = os.path.dirname(os.path.abspath(__file__))
 imagePath = os.path.join(root,'../test.png')
-
-root = os.path.dirname(os.path.abspath(__file__))
 imageBasePath = os.path.join(root,'../perspective_images/')
 
 def sort_array_by_second_element(arr):
@@ -30,7 +28,7 @@ def four_points_transform(image, pts):
     im_dst = cv2.imread(imageBasePath+'sqr.png')
     im_dst = im_dst[170:910, 590:1330]
     # Destination images's points.
-    pts_dst = np.array([[1139-offsetX,723-offsetY],[734-offsetX,722-offsetY],[734-offsetX,317-offsetY],[1139-offsetX,316-offsetY]]) 
+    pts_dst = np.array([[734-offsetX,722-offsetY],[734-offsetX,317-offsetY],[1139-offsetX,316-offsetY],[1139-offsetX,723-offsetY]]) 
 
     # Calculate Homography
     h, status = cv2.findHomography(pts_src, pts_dst)
@@ -47,11 +45,9 @@ def six_points_transform(image, pts):
 
     # Read destination image. (Imagem de modelo para a transformação)
     im_dst = cv2.imread(imageBasePath+'hex.jpg')
-    im_dst = im_dst[170:910, 590:1330]
-    im_dst = im_dst[120:960, 590:1330]
+    im_dst = im_dst[156:924, 576:1344]
     # Destination images's points.
-    #pts_dst = np.array([[1260-offsetX,551-offsetY],[1115-offsetX,803-offsetY],[821-offsetX,803-offsetY],[674-offsetX,551-offsetY],[821-offsetX,299-offsetY],[1115-offsetX,299-offsetY]])
-    pts_dst = np.array([[820,296],[1116,296],[670,550],[1262,550],[820,804],[1116,804]])
+    pts_dst = np.array([[1260-offsetX,550-offsetY],[1112-offsetX,298-offsetY],[1112-offsetX,802-offsetY],[820-offsetX,298-offsetY],[672-offsetX,550-offsetY],[820-offsetX,802-offsetY]])
     pts_dst =sort_array_by_second_element(pts_dst)
 
     # Calculate Homography
@@ -65,7 +61,7 @@ def five_points_transform(image, pts):
     # Read source image. (Imagem a ser transformada)
     im_src = image
     # Source image's points
-    pts_src = pts
+    pts_src = sort_array_by_second_element(pts)
 
     # Read destination image. (Imagem de modelo para a transformação)
     im_dst = cv2.imread(imageBasePath+'pen.png')
