@@ -215,6 +215,7 @@ class App(customtkinter.CTk):
             y_norte = int(raio* np.sin(angulo))+offset
             text_position = (x_norte+centroImag[0], centroImag[1]-y_norte)
             cv2.putText(self.cv2image, 'N', text_position, cv2.FONT_HERSHEY_DUPLEX, 1, [255, 255, 255], 2, cv2.LINE_AA)
+            cv2.arrowedLine(self.cv2image, (centroImag[0], centroImag[1]),text_position,cor, 5, 5, 0, 0.1)
             cv2.flip(self.cv2image,0)
 
 
