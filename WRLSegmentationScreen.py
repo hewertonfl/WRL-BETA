@@ -54,7 +54,6 @@ class App(customtkinter.CTk):
         # Janela de mensagem
         self.toplevel_window = None
         self.detect = detectorInterface()
-        self.diameters = np.array([0,0,0,0,0,0,0])
 
         # configure window
         self.title("WRL Segmentação de Bico")
@@ -74,7 +73,7 @@ class App(customtkinter.CTk):
 
         # self.sidebar_frame.grid_rowconfigure(5, weight=1)
         self.logo_label = customtkinter.CTkLabel(self.sidebar_frame, text="WRL", font=customtkinter.CTkFont(
-            size=100, weight="bold"), width=self.label_size)
+            size=70, weight="bold"), width=self.label_size)
         self.logo_label.grid(row=0, column=0, padx=20,
                              pady=(20, 0), sticky="ew")
 
@@ -114,7 +113,7 @@ class App(customtkinter.CTk):
             size=20, weight="bold"), width=self.label_size)
         self.med_label.grid(row=2, column=0, padx=10,
                             pady=(0, 10), sticky="ew")
-        self.text_med = f"Externo: {self.diameters[0]} mm\nD1: {self.diameters[1]} mm\nD2: {self.diameters[2]} mm\nD3: {self.diameters[3]} mm\nD4: {self.diameters[4]} mm\nD5: {self.diameters[5]} mm\nD6: {self.diameters[6]} mm"
+        self.text_med = f"Externo: 0 mm\nD1: 0 mm\nD2: 0 mm\nD3: 0 mm\nD4: 0 mm\nD5: 0 mm\nD6: 0 mm"
         self.med_desc = customtkinter.CTkLabel(self.info_frame, text=self.text_med,font=customtkinter.CTkFont(size=15, weight="normal"), justify="left")
         self.med_desc.grid(row=3, column=0, padx=(0, 0), pady=(0, 20))
 
@@ -123,17 +122,21 @@ class App(customtkinter.CTk):
             self.sidebar_frame, command=self.save_diameters, text="Salvar Diâmetros")
         self.sidebar_button_2.grid(
             row=4, column=0, padx=20, pady=10, sticky="ew")
+        self.sidebar_button_4 = customtkinter.CTkButton(
+            self.sidebar_frame, command=self.meanDiametesCorrection, text="Desfazer medição atual")
+        self.sidebar_button_4.grid(
+            row=5, column=0, padx=20, pady=10, sticky="ew")
         self.sidebar_button_3 = customtkinter.CTkButton(
             self.sidebar_frame, command=self.exit, text="Sair")
         self.sidebar_button_3.grid(
-            row=5, column=0, padx=20, pady=10, sticky="ew")
+            row=6, column=0, padx=20, pady=10, sticky="ew")
         self.appearance_mode_label = customtkinter.CTkLabel(
             self.sidebar_frame, text="Appearance Mode:", anchor="w")
-        self.appearance_mode_label.grid(row=6, column=0, padx=20, pady=(10, 0))
+        self.appearance_mode_label.grid(row=7, column=0, padx=20, pady=(10, 0))
         self.appearance_mode_optionemenu = customtkinter.CTkOptionMenu(self.sidebar_frame, values=["Light", "Dark", "System"],
                                                                        command=self.change_appearance_mode_event)
         self.appearance_mode_optionemenu.grid(
-            row=7, column=0, padx=20, pady=(10, 10), sticky="ew")
+            row=8, column=0, padx=20, pady=(10, 10), sticky="ew")
     
 
         # Criação das guias de visualização
@@ -259,6 +262,13 @@ class App(customtkinter.CTk):
         app.destroy()
         #process = subprocess.Popen(['python3', 'main.py'], stdout=None, stderr=None)
     
+    def meanDiametesCorrection(self):
+        self.diametersMatrix = self.diametersMatrix[:-1, :]
+        self.diameters = np.array([0,0,0,0,0,0,0]) if self.diametersMatrix.size == 0 else np.mean(self.diametersMatrix,axis=0)
+
+        self.text_med = f"Externo: {self.diameters[0]} mm\nD1: {self.diameters[1]} mm\nD2: {self.diameters[2]} mm\nD3: {self.diameters[3]} mm\nD4: {self.diameters[4]} mm\nD5: {self.diameters[5]} mm\nD6: {self.diameters[6]} mm"
+        self.med_desc.configure(text=self.text_med)
+
     def save_diameters(self):
         if self.toplevel_window is None or not self.toplevel_window.winfo_exists():
             self.toplevel_window = ToplevelWindow(self)
@@ -280,11 +290,18 @@ class App(customtkinter.CTk):
 
     def show_seg(self):
         self.segImage = cv2.imread(self.root+"/test.png")
-        self.imgRef,self.diameters, self.detect_signal = self.detect.segment(self.segImage)
+        self.imgRef,self.detect_diameters, self.detect_signal = self.detect.segment(self.segImage)
+
+        self.diametersMatrix = np.empty((0,7))
+        self.diametersAux = np.array([0,0,0,0,0,0,0])
+        for i,diameter in enumerate(self.detect_diameters):
+            self.diametersAux[i] = diameter
+        self.diametersMatrix = np.vstack((self.diametersMatrix, self.diametersAux))
+        self.diameters = np.mean(self.diametersMatrix,axis=0)
+
         self.text_med = f"Externo: {self.diameters[0]} mm\nD1: {self.diameters[1]} mm\nD2: {self.diameters[2]} mm\nD3: {self.diameters[3]} mm\nD4: {self.diameters[4]} mm\nD5: {self.diameters[5]} mm\nD6: {self.diameters[6]} mm"
         self.med_desc.configure(text=self.text_med)
         if self.detect_signal:
-            print("entrou")
             self.tabview.set("Imagem Segmentada")
             self.detect_signal = False
             self.process.terminate()
