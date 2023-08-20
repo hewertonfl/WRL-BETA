@@ -1,12 +1,14 @@
 import tkinter as ttk
 import customtkinter
 from PIL import Image, ImageTk
-#from utils.WRLML import *
+from utils.WRLML import detectorInterface
 import cv2
 import os
 import numpy as np
 import argparse
 import subprocess
+import time
+import multiprocessing
 
 # import RPi.GPIO as gpio
 # gpio.setmode(gpio.BCM)
@@ -45,13 +47,14 @@ customtkinter.set_appearance_mode("Dark")
 # Themes: "blue" (standard), "green", "dark-blue"
 customtkinter.set_default_color_theme("dark-blue")
 
-
 class App(customtkinter.CTk):
     def __init__(self):
         super().__init__()
 
         # Janela de mensagem
         self.toplevel_window = None
+        self.detect = detectorInterface()
+        self.diameters = np.array([0,0,0,0,0,0,0])
 
         # configure window
         self.title("WRL Segmentação de Bico")
@@ -111,7 +114,8 @@ class App(customtkinter.CTk):
             size=20, weight="bold"), width=self.label_size)
         self.med_label.grid(row=2, column=0, padx=10,
                             pady=(0, 10), sticky="ew")
-        self.med_desc = customtkinter.CTkLabel(self.info_frame, text="Externo: 400.00 mm\nD1: 60.00 mm\nD2: 60.00 mm\nD3: 60.00 mm\nD4: 60.00 mm\nD5: 60.00 mm\nD6: 60.00 mm",font=customtkinter.CTkFont(size=15, weight="normal"), justify="left")
+        self.text_med = f"Externo: {self.diameters[0]} mm\nD1: {self.diameters[1]} mm\nD2: {self.diameters[2]} mm\nD3: {self.diameters[3]} mm\nD4: {self.diameters[4]} mm\nD5: {self.diameters[5]} mm\nD6: {self.diameters[6]} mm"
+        self.med_desc = customtkinter.CTkLabel(self.info_frame, text=self.text_med,font=customtkinter.CTkFont(size=15, weight="normal"), justify="left")
         self.med_desc.grid(row=3, column=0, padx=(0, 0), pady=(0, 20))
 
         # Botões
@@ -171,6 +175,7 @@ class App(customtkinter.CTk):
 
         self.onCamera = True
         self.showAnimation = False
+        self.detect_signal = False
 
     def change_appearance_mode_event(self, new_appearance_mode: str):
         customtkinter.set_appearance_mode(new_appearance_mode)
@@ -245,15 +250,10 @@ class App(customtkinter.CTk):
         #imageName = self.grupo+'_'+self.codigo+'_'+str(self.vida)+'.jpg'
         # cv2.imwrite(imageName, self.imgRef)
         self.playGif()
-        self.segImage= cv2.imread(self.root+"/test.png")
-        self.imgRef,diameter, signal = segment(self.segImage)
-        self.imgRef = Image.fromarray(self.imgRef)
-        self.imgRef = ImageTk.PhotoImage(image=self.imgRef)
-        self.segImg.configure(image=self.imgRef)
-        self.origImg.configure(image=self.imgRef)
-        if signal:
-            self.tabview.set("Imagem Segmentada")
-
+        self.show_seg()
+        self.process = multiprocessing.Process(target=self.show_seg)
+        self.process.start()
+        
     def exit(self):
         app.destroy()
         #process = subprocess.Popen(['python3', 'main.py'], stdout=None, stderr=None)
@@ -271,12 +271,22 @@ class App(customtkinter.CTk):
             self.onCamera = True
             self.showAnimation = False
 
-
         elif (self.tabview.get() != "Câmera"):
             self.cap.release()
             self.onCamera = False
             self.showAnimation = False
         self.after(10, self.checkTabs)
+
+    def show_seg(self):
+        self.segImage = cv2.imread(self.root+"/test.png")
+        self.imgRef,self.diameters, self.detect_signal = self.detect.segment(self.segImage)
+        self.text_med = f"Externo: {self.diameters[0]} mm\nD1: {self.diameters[1]} mm\nD2: {self.diameters[2]} mm\nD3: {self.diameters[3]} mm\nD4: {self.diameters[4]} mm\nD5: {self.diameters[5]} mm\nD6: {self.diameters[6]} mm"
+        self.med_desc.configure(text=self.text_med)
+        if self.detect_signal:
+            print("entrou")
+            self.tabview.set("Imagem Segmentada")
+            self.detect_signal = False
+            self.process.terminate()
 
     def resizeImg(self, img):
         self.size = self.getSize(img)
@@ -287,8 +297,6 @@ class App(customtkinter.CTk):
 
     def responsive(self):
         if self.tabview.get() == "Imagem Segmentada":
-            print(self.getSize(self.imgRef))
-
             try:
                 self.imgRef = self.resizeImg(self.imgRef)
             except:
@@ -297,7 +305,6 @@ class App(customtkinter.CTk):
             self.segImg.configure(image=self.tab1)
             self.segImg.grid(row=0, column=0, sticky="nswe")
         self.after(15, self.responsive)
-
 
 class ToplevelWindow(customtkinter.CTkToplevel):
     def __init__(self, *args, **kwargs):

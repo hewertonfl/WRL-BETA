@@ -5,15 +5,16 @@ import numpy as np
 import pandas as pd
 import math
 import os
-import perspective
+from . import perspective
 
 class detectorInterface:
     def __init__(self):
         self.root = os.path.dirname(os.path.abspath(__file__))
         self.weightPath = os.path.join(self.root,'../weights/best.onnx')
         self.imagePath = os.path.join(self.root,'../test.png')
+        self.model = YOLO(self.weightPath,task='segment')
 
-    def do_segments(masks):
+    def mask2segments(self,masks):
         segments = []
         for x in masks:
             x = x.astype('uint8')
@@ -22,16 +23,16 @@ class detectorInterface:
             segments.append(c.astype('float32'))
         return segments
 
-    def getMaskPerspective(masks,centers):
+    def getMaskPerspective(self,masks,centers):
         perspectiveMasks = []
         for i,mask in enumerate(masks):
             mask = perspective.six_points_transform(masks[i],centers)
             perspectiveMasks.append(mask)
         return perspectiveMasks
 
-    def calc_centers(masks):   
+    def calc_centers(self,masks):   
         centers = np.empty((0, 2))
-        segments = do_segments(masks)
+        segments = self.mask2segments(masks)
         for segment in segments:
             segment = np.array(segment, np.int32)
             M = cv2.moments(segment)
@@ -41,9 +42,9 @@ class detectorInterface:
             centers = np.vstack((centers,center))
         return centers
 
-    def calc_diameters(masks):
+    def calc_diameters(self,masks):
         diameters = np.array([])
-        segments = do_segments(masks)
+        segments = self.mask2segments(masks)
         for segment in segments:
             mask = np.array(segment, np.int32)
 
@@ -52,7 +53,7 @@ class detectorInterface:
             diameters = np.append(diameters,diameter)
         return diameters
 
-    def order(image,centers,compass):
+    def order(self,image,centers,compass):
         """ Função que ordena um array de acordo com o ângulo
             params:
                 - Image é um numpy array correspondente a imagem
@@ -106,21 +107,15 @@ class detectorInterface:
         return order
 
 
-    def segment():
-        # Paths
-        root = os.path.dirname(os.path.abspath(__file__))
-        weightPath = os.path.join(root,'../weights/best.onnx')
-        imagePath = os.path.join(root,'../test.png')
-
-        # Load the YOLOv8 model
-        model = YOLO(weightPath,task='segment')
-        image = cv2.imread(imagePath)
+    def segment(self,image):
+        """Função que segmenta e calcula os diâmetros"""
+        #image = cv2.imread(self.imagePath)
         image = cv2.resize(image, (768,768), interpolation = cv2.INTER_AREA)
-        results = model.predict(image, save=False, imgsz=768, conf=0.25,max_det=7,task='segment')[0]
+        results = self.model.predict(image, save=False, imgsz=768, conf=0.25,max_det=7,task='segment')[0]
 
         masks = results.masks.data.cpu().numpy()
-        diameters = calc_diameters(masks)
-        centers = calc_centers(masks)
+        diameters = self.calc_diameters(masks)
+        centers = self.calc_centers(masks)
         
         # Encontrando o indice do diametro máximo 
         d_max_index = np.argmax(diameters)
@@ -131,7 +126,7 @@ class detectorInterface:
         masks = np.delete(masks,d_max_index,axis=0)
 
         angle = np.pi/2
-        holes_order = order(image,centers,angle)
+        holes_order = self.order(image,centers,angle)
         holes_order_list = holes_order.tolist()
 
         #Ordenação das máscaras e centros
@@ -143,12 +138,12 @@ class detectorInterface:
 
         # Transformação perspectiva
         annotated_frame = perspective.six_points_transform(image,centers)
-        perspectiveMasks =  getMaskPerspective(masks,centers)
+        perspectiveMasks =  self.getMaskPerspective(masks,centers)
         perspectiveMasks = np.array(perspectiveMasks)
 
         # Calculos dos diametros e centros
-        perspectiveDiameters = calc_diameters(perspectiveMasks)
-        perspectiveCenters = calc_centers(perspectiveMasks)
+        perspectiveDiameters = self.calc_diameters(perspectiveMasks)
+        perspectiveCenters = self.calc_centers(perspectiveMasks)
 
         # Exibição da imagem
         for i,mask in enumerate(perspectiveMasks):
@@ -161,10 +156,10 @@ class detectorInterface:
             annotated_frame = cv2.putText(annotated_frame,text,text_center ,cv2.FONT_HERSHEY_SIMPLEX,1,(0, 255, 0),2,cv2.LINE_AA )
 
         annotated_frame = cv2.resize(annotated_frame, (640,640), interpolation = cv2.INTER_AREA)
-        cv2.imshow('teste',annotated_frame)
-        cv2.waitKey(0)    
+        # cv2.imshow('teste',annotated_frame)
+        # cv2.waitKey(0)    
 
-        return annotated_frame,diameters,True
+        return annotated_frame,perspectiveDiameters,True
 
 if __name__ =='__main__':
     detect = detectorInterface().segment()
